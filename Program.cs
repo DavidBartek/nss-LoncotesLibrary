@@ -55,6 +55,7 @@ app.MapGet("/api/materials", (LoncotesLibraryDbContext db) =>
 
 // get material by specific id
 // include genre, materialtype, checkouts, and linked patron for each checkout.
+// NEEDS TO BE CHECKED ONCE RESERVATIONS EXIST
 app.MapGet("/api/materials/{id}", (LoncotesLibraryDbContext db, int id) =>
 {
     try
@@ -114,5 +115,55 @@ app.MapGet("/api/patrons", (LoncotesLibraryDbContext db) =>
 {
     return db.Patrons.ToList();
 });
+
+// get patron by id
+// include reservations associated, and material assoc with each reservation, and material type associated with each material
+// NEEDS TO BE CHECKED ONCE RESERVATIONS EXIST
+app.MapGet("/api/patrons/{id}", (LoncotesLibraryDbContext db, int id) =>
+{
+    try
+    {
+        Patron foundPatron = db.Patrons
+            .Include(p => p.Checkouts)
+                .ThenInclude(c => c.Material)
+                    .ThenInclude(m => m.MaterialType)
+            .Single(p => p.Id == id);
+        return Results.Ok(foundPatron);
+    }
+    catch (InvalidOperationException)
+    {
+        return Results.NotFound();
+    }
+});
+
+// edit patron's address and/or email address (not name)
+
+app.MapPut("/api/patrons/{id}", (LoncotesLibraryDbContext db, int id, Patron modifiedPatron) =>
+{
+    Patron foundPatron = db.Patrons.SingleOrDefault(p => p.Id == id);
+    if (foundPatron == null)
+    {
+        return Results.NotFound();
+    }
+    else if (modifiedPatron.Id != id)
+    {
+        return Results.BadRequest();
+    }
+    foundPatron.Address = modifiedPatron.Address;
+    foundPatron.Email = modifiedPatron.Email;
+
+    db.SaveChanges();
+    return Results.NoContent();
+
+});
+
+// soft delete - deactivate patron (set IsActive to false)
+
+// create new checkout for a material and patron
+// set checkout date to DateTime.Today
+
+// mark checked out item as returned by item id
+// endpoint: expects checkout id
+// update checkout with return date of DateTime.Today
 
 app.Run();
