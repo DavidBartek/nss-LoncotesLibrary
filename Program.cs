@@ -36,26 +36,38 @@ app.UseHttpsRedirection();
 // get list of all circulating materials
 // include genre, materialtype
 // exclude materials with an OutOfCirculation value
+// reservations list will be "null" for this endpoint (only populates when accessing one material by id)
 
-app.MapGet("/api/materials", (LoncotesLibraryDbContext db) =>
+// IN ADDITION:
+// should be able to get a list of materials filtered by genre(id) and/or materialtype(id)
+
+// ERROR HANDLING:
+// must verify that genreId and materialTypeId, if passed in, exist
+
+app.MapGet("/api/materials", (LoncotesLibraryDbContext db, int? genreId, int? materialTypeId) =>
 {
-    return db.Materials.Where(m => m.OutOfCirculationSince == null)
+    var query = db.Materials
         .Include(m => m.Genre)
         .Include(m => m.MaterialType)
-        .ToList();
+        .Where(m => m.OutOfCirculationSince == null);
+    
+    if (genreId.HasValue)
+    {
+        query = query.Where(m => m.GenreId == genreId);
+    }
+
+    if (materialTypeId.HasValue)
+    {
+        query = query.Where(m => m.MaterialTypeId == materialTypeId);
+    }
+
+    var results = query.ToList();
+
+    return results;
 });
-
-// // get list of materials by genre and/or materialtype
-// how do I set up a route to handle all these different conditions
-// ^ sounds like this will be set up in this same endpoint
-
-// app.MapGet("/api/materials/")
-
-
 
 // get material by specific id
 // include genre, materialtype, checkouts, and linked patron for each checkout.
-// NEEDS TO BE CHECKED ONCE RESERVATIONS EXIST
 app.MapGet("/api/materials/{id}", (LoncotesLibraryDbContext db, int id) =>
 {
     try
@@ -159,11 +171,57 @@ app.MapPut("/api/patrons/{id}", (LoncotesLibraryDbContext db, int id, Patron mod
 
 // soft delete - deactivate patron (set IsActive to false)
 
+app.MapDelete("/api/patrons/{id}", (LoncotesLibraryDbContext db, int id) =>
+{
+    Patron foundPatron = db.Patrons.SingleOrDefault(p => p.Id == id);
+    if (foundPatron == null)
+    {
+        return Results.NotFound();
+    }
+
+    foundPatron.IsActive = false;
+    db.SaveChanges();
+    return Results.NoContent();
+});
+
+// I MADE THIS:
+// GET all checkouts
+
+app.MapGet("/api/checkouts", (LoncotesLibraryDbContext db) =>
+{
+    return db.Checkouts
+        .Include(c => c.Material)
+            .ThenInclude(m => m.MaterialType)
+        .Include(c => c.Patron)
+        .ToList();
+});
+
 // create new checkout for a material and patron
 // set checkout date to DateTime.Today
+// ERROR HANDLING: ensure newCheckout object's materialId and patronId exist
+
+app.MapPost("/api/checkouts", (LoncotesLibraryDbContext db, Checkout newCheckout) =>
+{
+    newCheckout.CheckoutDate = DateTime.Today;
+    db.Checkouts.Add(newCheckout);
+    db.SaveChanges();
+    return Results.Created($"/api/checkouts/{newCheckout.Id}", newCheckout);
+});
 
 // mark checked out item as returned by item id
 // endpoint: expects checkout id
 // update checkout with return date of DateTime.Today
+
+app.MapDelete("/api/checkouts/{id}", (LoncotesLibraryDbContext db, int id) =>
+{
+    Checkout foundCheckout = db.Checkouts.SingleOrDefault(c => c.Id == id);
+    if (foundCheckout == null)
+    {
+        return Results.NotFound();
+    }
+    foundCheckout.ReturnDate = DateTime.Today;
+    db.SaveChanges();
+    return Results.NoContent();
+});
 
 app.Run();
