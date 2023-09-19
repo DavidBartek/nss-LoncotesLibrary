@@ -91,7 +91,8 @@ namespace LoncotesLibrary.Migrations
                     MaterialId = table.Column<int>(type: "integer", nullable: false),
                     PatronId = table.Column<int>(type: "integer", nullable: false),
                     CheckoutDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    ReturnDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
+                    ReturnDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    Paid = table.Column<bool>(type: "boolean", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -162,6 +163,18 @@ namespace LoncotesLibrary.Migrations
                     { 8, 2, "Hirohito's War", 1, null },
                     { 9, 8, "Peewee's Big Adventure", 4, new DateTime(2000, 9, 1, 0, 0, 0, 0, DateTimeKind.Unspecified) },
                     { 10, 9, "Operating System Concepts, 8th ed", 1, new DateTime(2008, 11, 30, 0, 0, 0, 0, DateTimeKind.Unspecified) }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Checkouts",
+                columns: new[] { "Id", "CheckoutDate", "MaterialId", "Paid", "PatronId", "ReturnDate" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2023, 9, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, null, 1, new DateTime(2023, 9, 10, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { 2, new DateTime(2023, 9, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 2, false, 1, null },
+                    { 3, new DateTime(2023, 9, 18, 0, 0, 0, 0, DateTimeKind.Unspecified), 3, null, 1, null },
+                    { 4, new DateTime(2023, 9, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 4, true, 2, new DateTime(2023, 9, 18, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { 5, new DateTime(2023, 9, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 5, false, 2, new DateTime(2023, 9, 16, 0, 0, 0, 0, DateTimeKind.Unspecified) }
                 });
 
             migrationBuilder.CreateIndex(

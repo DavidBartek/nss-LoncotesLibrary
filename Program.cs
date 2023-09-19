@@ -110,6 +110,30 @@ app.MapDelete("/api/materials/{id}", (LoncotesLibraryDbContext db, int id) =>
     return Results.NoContent();
 });
 
+// get list of all available materials (has a related checkout with a return date != null)
+app.MapGet("/api/materials/available", (LoncotesLibraryDbContext db) =>
+{
+    return db.Materials
+        .Where(m => m.OutOfCirculationSince == null)
+        .Where(m => m.Checkouts.All(co => co.ReturnDate != null))
+        .ToList();
+});
+
+// get list of all overdue checkouts (where Today - checkout date is > material type's days checkout days)
+app.MapGet("/api/checkouts/overdue", (LoncotesLibraryDbContext db) =>
+{
+    return db.Checkouts
+        .Include(p => p.Patron)
+        .Include(co => co.Material)
+        .ThenInclude(m => m.MaterialType)
+        .Where(co =>
+            co.ReturnDate == null &&
+            (DateTime.Today - co.CheckoutDate).Days >
+            co.Material.MaterialType.CheckoutDays
+            )
+        .ToList();
+});
+
 // get list of all material types
 app.MapGet("/api/materialtypes", (LoncotesLibraryDbContext db) =>
 {
@@ -199,6 +223,9 @@ app.MapGet("/api/checkouts", (LoncotesLibraryDbContext db) =>
 // create new checkout for a material and patron
 // set checkout date to DateTime.Today
 // ERROR HANDLING: ensure newCheckout object's materialId and patronId exist
+// ERROR HANDLING: ensure materialId is not a material already checked out
+// ERROR HANDLING: ensure materialId is not a material out of circulation
+// ERROR HANDLING: ensure patronId is not an inactive patron
 
 app.MapPost("/api/checkouts", (LoncotesLibraryDbContext db, Checkout newCheckout) =>
 {

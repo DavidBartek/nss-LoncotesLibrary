@@ -61,7 +61,15 @@ public class LoncotesLibraryDbContext : DbContext
 
         modelBuilder.Entity<Checkout>().HasData(new Checkout[]
         {
-            // none needed for seed
+            new Checkout {Id = 1, MaterialId = 1, PatronId = 1, CheckoutDate = new DateTime(2023, 9, 1), ReturnDate = new DateTime(2023, 9, 10)}, // returned, not late
+            new Checkout {Id = 2, MaterialId = 2, PatronId = 1, CheckoutDate = new DateTime(2023, 9, 1), Paid = false}, // not returned, late (4 days overdue), not paid
+            new Checkout {Id = 3, MaterialId = 3, PatronId = 1, CheckoutDate = new DateTime(2023, 9, 18)}, // not returned, not late
+            new Checkout {Id = 4, MaterialId = 4, PatronId = 2, CheckoutDate = new DateTime(2023, 9, 1), ReturnDate = new DateTime(2023, 9, 18), Paid = true}, // returned, late (3 days overdue), paid
+            new Checkout {Id = 5, MaterialId = 5, PatronId = 2, CheckoutDate = new DateTime(2023, 9, 1), ReturnDate = new DateTime(2023, 9, 16), Paid = false} // returned, late (1 day overdue), not paid
+
+            // patron 1 should have late fees of .5 * 4 ($2)
+            // patron 2 should have late fees of .5 * 1 ($0.50)
+
         });
     }
 }

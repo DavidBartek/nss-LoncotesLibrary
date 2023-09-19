@@ -35,10 +35,13 @@ namespace LoncotesLibrary.Migrations
                     b.Property<int>("MaterialId")
                         .HasColumnType("integer");
 
+                    b.Property<bool?>("Paid")
+                        .HasColumnType("boolean");
+
                     b.Property<int>("PatronId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("ReturnDate")
+                    b.Property<DateTime?>("ReturnDate")
                         .HasColumnType("timestamp without time zone");
 
                     b.HasKey("Id");
@@ -48,6 +51,49 @@ namespace LoncotesLibrary.Migrations
                     b.HasIndex("PatronId");
 
                     b.ToTable("Checkouts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CheckoutDate = new DateTime(2023, 9, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            MaterialId = 1,
+                            PatronId = 1,
+                            ReturnDate = new DateTime(2023, 9, 10, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CheckoutDate = new DateTime(2023, 9, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            MaterialId = 2,
+                            Paid = false,
+                            PatronId = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CheckoutDate = new DateTime(2023, 9, 18, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            MaterialId = 3,
+                            PatronId = 1
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CheckoutDate = new DateTime(2023, 9, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            MaterialId = 4,
+                            Paid = true,
+                            PatronId = 2,
+                            ReturnDate = new DateTime(2023, 9, 18, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CheckoutDate = new DateTime(2023, 9, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            MaterialId = 5,
+                            Paid = false,
+                            PatronId = 2,
+                            ReturnDate = new DateTime(2023, 9, 16, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        });
                 });
 
             modelBuilder.Entity("LoncotesLibrary.Models.Genre", b =>

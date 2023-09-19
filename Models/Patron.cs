@@ -15,4 +15,32 @@ public class Patron
     [Required]
     public bool IsActive { get; set; }
     public List<Checkout> Checkouts {get; set;}
+    public decimal Balance
+    {
+        get
+        {
+            // calculated property: Balance
+            // totals up unpaid fines that a patron owes
+            // if Checkout.Paid == false: implement sum logic
+            // else: return null
+
+            // declare a running total variable
+            // iterate through linked checkouts, using the following properties
+            // if Paid = false, add LateFee to runningTotal
+
+            decimal runningTotal = 0M;
+            if (Checkouts != null)
+            {
+                foreach (Checkout Checkout in Checkouts)
+                {
+                    if (Checkout.Paid == false && Checkout.LateFee > 0)
+                    {
+                        runningTotal += (decimal)Checkout.LateFee;
+                    }
+                }
+            }
+            return runningTotal;
+            
+        }
+    }
 }
