@@ -185,8 +185,24 @@ app.MapPut("/api/patrons/{id}", (LoncotesLibraryDbContext db, int id, Patron mod
     {
         return Results.BadRequest();
     }
-    foundPatron.Address = modifiedPatron.Address;
-    foundPatron.Email = modifiedPatron.Email;
+    
+    if (modifiedPatron.Address == null)
+    {
+        foundPatron.Address = db.Patrons.SingleOrDefault(p => p.Id == id).Address;
+    }
+    else
+    {
+        foundPatron.Address = modifiedPatron.Address;
+    }
+
+    if (modifiedPatron.Email == null)
+    {
+        foundPatron.Email = db.Patrons.SingleOrDefault(p => p.Id == id).Email;
+    }
+    else
+    {
+        foundPatron.Email = modifiedPatron.Email;
+    }
 
     db.SaveChanges();
     return Results.NoContent();

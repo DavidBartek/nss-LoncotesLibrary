@@ -20,6 +20,7 @@ public class Checkout
         get
         {
             DateTime dueDate = CheckoutDate.AddDays(Material.MaterialType.CheckoutDays);
+            // material has not been returned; 
             if (ReturnDate != null && dueDate < ReturnDate)
             {
                 int daysLate = ((DateTime)ReturnDate - dueDate).Days;
