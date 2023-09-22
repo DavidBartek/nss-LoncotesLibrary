@@ -114,6 +114,8 @@ app.MapDelete("/api/materials/{id}", (LoncotesLibraryDbContext db, int id) =>
 app.MapGet("/api/materials/available", (LoncotesLibraryDbContext db) =>
 {
     return db.Materials
+        .Include(m => m.MaterialType)
+        .Include(m => m.Genre)
         .Where(m => m.OutOfCirculationSince == null)
         .Where(m => m.Checkouts.All(co => co.ReturnDate != null))
         .ToList();
@@ -248,6 +250,9 @@ app.MapPost("/api/checkouts", (LoncotesLibraryDbContext db, Checkout newCheckout
     newCheckout.CheckoutDate = DateTime.Today;
     db.Checkouts.Add(newCheckout);
     db.SaveChanges();
+    Material foundMaterial = db.Materials
+        .Include(m => m.MaterialType).SingleOrDefault(m => newCheckout.MaterialId == m.Id);
+    newCheckout.Material = foundMaterial;
     return Results.Created($"/api/checkouts/{newCheckout.Id}", newCheckout);
 });
 
